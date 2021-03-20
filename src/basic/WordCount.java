@@ -18,7 +18,6 @@ import org.apache.log4j.BasicConfigurator;
 
 
 public class WordCount {
-
     public static void main(String[] args) throws Exception {
         // faz uma configuração simples do Hadoop
         BasicConfigurator.configure();
@@ -31,7 +30,6 @@ public class WordCount {
 
         // arquivo de saida
         Path output = new Path(files[1]);
-
 
         // tendo os arquivos de entrada e saida vamos pro job  !!MUITA ATENÇAO!!
         // criacao do job e seu nome
@@ -54,8 +52,9 @@ public class WordCount {
 
         // Rodar o job
         System.exit(j.waitForCompletion(true) ? 0 : 1);
-        //system.exit é o relatorio final se deu erro (1) ou nao (0).
-        //wait for completion aguarda a execução do job;
+        /*system.exit é o relatorio final se deu erro (1) ou nao (0).
+        wait for completion aguarda a execução do job;
+        */
     }
 
     /**     MAP
@@ -66,7 +65,7 @@ public class WordCount {
      *
      * // QUANDO A ENTRADA É UM TEXTO //
      *  - input: (offset, conteúdo da linha); [offset == QUANTIDADE DE BITES DESDE O COMEÇO DO ARQUIVO]
-     *  OBS: longWritable, IntWritable por "baixo dos panos" é o mesmo que Long e String,
+     *  OBS: longWritable, IntWritable, Text por "baixo dos panos" é o mesmo que Long , Int e String,
      *  o que difere é o Writable, que nos diz que o tipo é serializavel (permite converter objeto em bytes),
      *  com o objetivo de facilitar a etapa de transferência.
      */
@@ -83,10 +82,14 @@ public class WordCount {
                 Text chaveSaida = new Text(p);
                 // variável interna do loop que atribui o valor da túpla
                 IntWritable valorSaida = new IntWritable(1);
-                // o contexto é o responsavel em fazer a comunicação do map com o shuffle e reduce
+                /* o contexto é o responsavel em fazer a comunicação do map com o shuffle e reduce
+                    ele também é responsável pela parte do Sort/Shuffle por baixo dos panos
+                 */
                 con.write(chaveSaida,valorSaida);
-                /** !! atentar se os tipos  de saida do 'MapForWordCount' batem com o 'void map' e com as
-                * variáveis internas do loop de montagem das túplas !!*/
+                /*
+                 !! Atentar se os tipos  de saida do 'MapForWordCount' batem com o 'void map' e com as
+                 variáveis internas do loop de montagem das túplas !!
+                */
             }
         }
     }
@@ -108,7 +111,7 @@ public class WordCount {
             // criação das túplas de saída (chave,valor)
             // reaproveita a chave e organiza o valor.
             IntWritable valorSaida = new IntWritable(soma);
-            // salvando em arquivo :: usamos o contexto zica do baile
+            // salvando em arquivo :: usamos o contexto
             con.write(key,valorSaida);
         }
     }

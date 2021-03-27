@@ -1,11 +1,9 @@
 package advanced.customwritable;
 
+import basic.WordCount;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -32,6 +30,21 @@ public class AverageTemperature {
         // criacao do job e seu nome
         Job j = new Job(c, "media");
 
+        // registros das classes;
+        j.setJarByClass(AverageTemperature.class);
+        j.setMapperClass(MapForAverage.class);
+        j.setReducerClass(ReduceForAverage.class);
+
+        // definicao dos tipos de saida
+        j.setMapOutputKeyClass(Text.class);
+        j.setMapOutputValueClass(FireAvgTempWritable.class);
+        j.setOutputKeyClass(Text.class);
+        j.setOutputValueClass(DoubleWritable.class);
+
+        // cadastro dos arquivos de entrada e saida
+        FileInputFormat.addInputPath(j,input);
+        FileOutputFormat.setOutputPath(j, output);
+
         // lanca o job e aguarda sua execucao
         System.exit(j.waitForCompletion(true) ? 0 : 1);
     }
@@ -42,14 +55,49 @@ public class AverageTemperature {
         // Funcao de map
         public void map(LongWritable key, Text value, Context con)
                 throws IOException, InterruptedException {
+            // O map executa linha a linha :: Converte a linha em string
+            String linha = value.toString();
 
+            // fazendo o split para quebrara a linha passando o caracter ',' como valor de quebra
+            String [] coluna = linha.split(",");
+
+            // obtendo a temperatuda :: converte o valor da outava coluna e float
+            double temp = Double.parseDouble(coluna[8]);
+
+            //
+            String mes = coluna[2];
+
+            // registo de ocorrencia
+            long n = 1;
+
+            // passando a temperatura para o sort/shuffle
+
+                // chamada do context passando como chave os meses;
+            con.write(new Text(mes),new FireAvgTempWritable(n,temp));
+                // chamada do context passando uma unica chave para calculo da media geral;
+            con.write(new Text("media de tudo"),new FireAvgTempWritable(n,temp));
         }
     }
 
-    public static class ReduceForAverage extends Reducer<Text, FireAvgTempWritable, Text, FloatWritable> {
+    public static class ReduceForAverage extends Reducer<Text, FireAvgTempWritable, Text, DoubleWritable> {
         public void reduce(Text key, Iterable<FireAvgTempWritable> values, Context con)
                 throws IOException, InterruptedException {
+            /*
+            Chega no reduce uma chave unica (media de tudo) com uma lista de valores compostos por
+            ocorrencia e soma das temperaturas
+            */
+            double somaTemps = 0.0;
+            long somaNs = 0;
+            // Somando temperaturas e ocorrencias
+            for(FireAvgTempWritable o : values){
+                somaTemps += o.getSomaTemp();
+                somaNs += o.getOcorrencia();
+            }
+            // chamada do context passando uma unica chave "media";
+            //con.write(new Text("media"), new DoubleWritable(somaTemps / somaNs));
 
+            // chamada do context com as chaves (key) vindas da saída do map;
+            con.write(new Text(key), new DoubleWritable(somaTemps / somaNs));
         }
     }
 

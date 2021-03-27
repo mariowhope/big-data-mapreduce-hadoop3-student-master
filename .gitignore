@@ -1,2 +1,4 @@
 # Project exclude paths
-/out/
+/in/transactions.csv
+/output/
+/src/transactions/

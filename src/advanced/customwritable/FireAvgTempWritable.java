@@ -8,7 +8,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Objects;
 
-// Java bean -> classe com as seguintes caracteristicas:   atributos privados , gets e sets e contrutor padrao (vazio)
+// Java bean -> classe com as seguintes caracteristicas:
+// atributos privados , gets e sets e contrutor padrao (vazio)
 public class FireAvgTempWritable implements WritableComparable<FireAvgTempWritable> {
     private long ocorrencia;
     private double somaTemp;

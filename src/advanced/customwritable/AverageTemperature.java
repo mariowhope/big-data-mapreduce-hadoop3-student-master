@@ -34,6 +34,7 @@ public class AverageTemperature {
         j.setJarByClass(AverageTemperature.class);
         j.setMapperClass(MapForAverage.class);
         j.setReducerClass(ReduceForAverage.class);
+        j.setCombinerClass(CombinerForAverage.class);
 
         // definicao dos tipos de saida
         j.setMapOutputKeyClass(Text.class);
@@ -101,4 +102,22 @@ public class AverageTemperature {
         }
     }
 
+    // o combiner é uma etapa opcional
+    public static class CombinerForAverage extends Reducer< Text , FireAvgTempWritable, Text, FireAvgTempWritable>{
+        public void reduce(Text key, Iterable<FireAvgTempWritable> values, Context con)
+                throws IOException, InterruptedException {
+            // no combiner, vamos somar as temperaturas parciais do bloco e tambem  as ocorrencias
+            double somaTemps = 0.0;
+            long somaNs = 0;
+            // Somando temperaturas e ocorrencias
+            for(FireAvgTempWritable o : values){
+                somaTemps += o.getSomaTemp();
+                somaNs += o.getOcorrencia();
+            }
+            // passando para o reduce alguns resultados ja somados,
+            // isto é, para cada chave;
+            // ja temos as somas das temperaturas e ocorrencias;
+            con.write(key, new FireAvgTempWritable(somaNs,somaTemps));
+        }
+    }
 }

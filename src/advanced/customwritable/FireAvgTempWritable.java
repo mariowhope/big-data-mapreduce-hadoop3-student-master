@@ -90,5 +90,4 @@ public class FireAvgTempWritable implements WritableComparable<FireAvgTempWritab
         }
         return 0;
     }
-
 }

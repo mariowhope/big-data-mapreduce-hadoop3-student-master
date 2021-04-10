@@ -50,7 +50,8 @@ public class FireAvgTempWritable implements WritableComparable<FireAvgTempWritab
                 ", somaTemp=" + somaTemp +
                 '}';
     }
-    // Métodos write/read :: Servem para serializar de forma customizada (necessário para transferência pela rede pelo contexto)
+    // Métodos write/read :: Servem para serializar de forma customizada
+    // (necessário para transferência pela rede pelo contexto)
     @Override
     public void write(DataOutput dataOutput) throws IOException {
         dataOutput.writeLong(ocorrencia);
